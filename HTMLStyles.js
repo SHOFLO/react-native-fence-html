@@ -155,6 +155,7 @@ class HTMLStyles {
   */
   cssToRNStyle (css, styleset) {
     const styleProps = stylePropTypes[styleset]
+
     return Object.keys(css)
       .map((key) => [key, css[key]])
       .map(([key, value]) => {
@@ -171,16 +172,20 @@ class HTMLStyles {
 
         const testStyle = {}
         testStyle[key] = value
-        if (styleProps[key](testStyle, key, '', 'prop')) {
+
+        /**
+         * Old Check: if (styleProps[key](testStyle, key, '', 'prop'))
+         * 
+         * This was invalid due to the new v15 of prop-types. This was/is checking if
+         * a style type was fontSize and that fontSize type had a string value (ie "24px")
+         * and if so convert it to a numeric value such as 24 for use in RN stylesheet.
+         */
+        if (testStyle.fontSize && testStyle.fontSize !== PropTypes.number) {
           // See if we can convert a 20px to a 20 automagically
-          if (styleProps[key] === PropTypes.number) {
-            const numericValue = parseFloat(value.replace('px', ''))
-            if (!isNaN(numericValue)) {
-              testStyle[key] = numericValue
-              if (!styleProps[key](testStyle, key, '', 'prop')) {
-                return [key, numericValue]
-              }
-            }
+          const numericValue = parseFloat(value.replace('px', ''))
+          if (!isNaN(numericValue)) {
+            testStyle[key] = numericValue
+            return [key, numericValue]
           }
           return undefined
         }

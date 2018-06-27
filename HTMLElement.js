@@ -101,7 +101,12 @@ class HTMLElement extends React.Component {
           HTMLStyles.defaultStyles[tagName],
           htmlStyles ? htmlStyles[tagName] : undefined,
           htmlAttribs.style ? HTMLStyles.cssStringToRNStyle(htmlAttribs.style, styleset) : undefined
-        ).filter((s) => s !== undefined)
+        ).filter((s) => {
+          // Fix for when the styles prop color has a value
+          // string of 'undefined' and it throws warning.
+          if (s && s.color && s.color === 'undefined') delete s.color;
+          if (s !== undefined) return s;
+        })
 
       return (
         <RNElem {...passProps} style={style}>
